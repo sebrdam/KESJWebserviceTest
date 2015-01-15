@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, make_response, render_template
 from flask.ext.httpauth import HTTPBasicAuth
+from flask.ext.basicauth import BasicAuth
 from Webdefinitions import *
 from Rawdata import *
 from neo4jrestclient.client import GraphDatabase
@@ -8,19 +9,24 @@ from datetime import timedelta
 from functools import update_wrapper
 
 app = Flask(__name__)
-auth = HTTPBasicAuth()
+##auth = HTTPBasicAuth()
 
 gdb = GraphDatabase("http://localhost:7474/db/data/")
 
 webdefinitions = Webdefinitions()
 
+basic_auth = BasicAuth(app)
 
-users = {
-    'kesj': '***',
-    'edwin': '****',
-    'sebastiaan': '****',
-    'user': '****'
-}
+app.config['BASIC_AUTH_USERNAME'] = '****'
+app.config['BASIC_AUTH_PASSWORD'] = '**************'
+
+
+##users = {
+##    'kesj': 'kesj',
+##    'edwin': 'edwin',
+##    'sebastiaan': 'sebastiaan',
+##    'user': '1234'
+##}
 
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
@@ -72,35 +78,52 @@ def index():
 def crawler_get():
 	return get_webdefinitions()
 
+##@auth.login_required
 @app.route('/crawler/post', methods=['POST'])
-@auth.login_required
+@basic_auth.required
 def crawler_post():
-	data = {
-		'category': request.form['category'],
-		'subcategory': request.form['subcategory'],
-		'linkurl': request.form['linkurl'],
-		'omschrijving': request.form['omschrijving'],
-		'prijs': request.form['prijs'],
-		'provider': request.form['provider'],
-		'dataspecs': request.form['dataspecs'],
-		'picurl': request.form['picurl']
-	}
-	return post_data(data)
+	##data = {
+	##	'category': request.form['category'],
+	##	'subcategory': request.form['subcategory'],
+	##	'linkurl': request.form['linkurl'],
+	##	'omschrijving': request.form['omschrijving'],
+	##	'prijs': request.form['prijs'],
+	##	'provider': request.form['provider'],
+	##	'dataspecs': request.form['dataspecs'],
+	##	'picurl': request.form['picurl']
+	##}
+	##return post_data(data)
+    
+    ## get the Json data
+    content = request.get_json()
+    ## Read the Json data
+    for item in content['data']:
+        ## get the specific fields from Json
+        url = item['linkurl']
+        omschrijving = item["omschrijving"]
+        prijs = item["prijs"]
+        category = item["category"]
+        dataspecs = item["dataspecs"]
+        provider = item["provider"]
+
+    tijd = localtime = time.asctime( time.localtime(time.time()) )
+
+    return 'Loggedin post accepted' + tijd
 
 @app.route('/crawler/process')
 def crawler_process():
 	return process_data()
 
-@auth.get_password
-def get_pw(username):
-    if username in users:
-        return users.get(username)
-    return None
+##@auth.get_password
+##def get_pw(username):
+##    if username in users:
+##        return users.get(username)
+##    return None
 
 
-@auth.error_handler
-def unauthorized():
-    return make_response(jsonify({'error': 'Unauthorized access'}), 401)
+##@auth.error_handler
+##def unauthorized():
+##    return make_response(jsonify({'error': 'Unauthorized access'}), 401)
 
 @app.route("/results/<input>", methods=['GET'])
 @crossdomain(origin='*')
