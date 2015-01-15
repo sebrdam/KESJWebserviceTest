@@ -17,16 +17,16 @@ webdefinitions = Webdefinitions()
 
 basic_auth = BasicAuth(app)
 
-app.config['BASIC_AUTH_USERNAME'] = '****'
-app.config['BASIC_AUTH_PASSWORD'] = '**************'
+app.config['BASIC_AUTH_USERNAME'] = 'user'
+app.config['BASIC_AUTH_PASSWORD'] = '1234'
 
 
-##users = {
-##    'kesj': 'kesj',
-##    'edwin': 'edwin',
-##    'sebastiaan': 'sebastiaan',
-##    'user': '1234'
-##}
+users = {
+    'kesj': 'kesj',
+    'edwin': 'edwin',
+    'sebastiaan': 'sebastiaan',
+    'user': '1234'
+}
 
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
@@ -106,9 +106,7 @@ def crawler_post():
         dataspecs = item["dataspecs"]
         provider = item["provider"]
 
-    tijd = localtime = time.asctime( time.localtime(time.time()) )
-
-    return 'Loggedin post accepted' + tijd
+    return 'Loggedin post accepted'
 
 @app.route('/crawler/process')
 def crawler_process():
