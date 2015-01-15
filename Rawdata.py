@@ -51,7 +51,7 @@ def process_data():
             queryHoofdNode = 'MATCH (n {naam:"' + rawdata.subcategory + '"}) RETURN n'
             hoofdnode = gdb.query(queryHoofdNode, returns=Node)
             if hoofdnode:
-                print 'test'
+                return 'test'
             else:
                 newHoofdNode = gdb.nodes.create(naam=rawdata.subcategory)
                 label.add(newHoofdNode)

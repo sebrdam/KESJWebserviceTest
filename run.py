@@ -16,10 +16,10 @@ webdefinitions = Webdefinitions()
 
 
 users = {
-    'kesj': 'kesj',
-    'edwin': 'edwin',
-    'sebastiaan': 'sebastiaan',
-    'user': '1234'
+    'kesj': '***',
+    'edwin': '****',
+    'sebastiaan': '****',
+    'user': '****'
 }
 
 def crossdomain(origin=None, methods=None, headers=None,
