@@ -40,23 +40,31 @@ def process_data():
         mynode = gdb.query(query2, returns=Node)
         if mynode:
             ## if exists update node with new price
-            query3 = 'MATCH (n {url:"' + rawdata.linkurl + '"}) SET n.prijs_'+ rawdata.timestamp.strftime('%Y%m%d%H%M%S') +' = '+ rawdata.prijs +', n.prijs = '+rawdata.prijs+', n.omschrijving = "'+rawdata.omschrijving+'", n.picurl = "'+rawdata.picurl+'", n.id = "'+str(rawdata.id)+'"'
+            query3 = 'MATCH (n {url:"' + rawdata.linkurl + '"}) SET n.prijs_'+ rawdata.timestamp.strftime('%Y%m%d%H%M%S') +' = '+ rawdata.prijs +', n.prijs = '+rawdata.prijs+', n.omschrijving = "'+rawdata.omschrijving+'", n.picurl = "'+rawdata.picurl+'"'
             mynode1 = gdb.query(query3, returns=Node)
 
         ##else create the node
         else:
-            comp = gdb.nodes.create(name=rawdata.category, omschrijving=rawdata.omschrijving, prijs=rawdata.prijs, maincategory=rawdata.category, subcategory=rawdata.subcategory, provider=rawdata.provider, url=rawdata.linkurl, picurl=rawdata.picurl)
+            comp = gdb.nodes.create(name=rawdata.category, omschrijving=rawdata.omschrijving, prijs=rawdata.prijs, maincategory=rawdata.category, subcategory=rawdata.subcategory, provider=rawdata.provider, url=rawdata.linkurl, picurl=rawdata.picurl, id=rawdata.id)
             label.add(comp)
 
             queryHoofdNode = 'MATCH (n {naam:"' + rawdata.subcategory + '"}) RETURN n'
             hoofdnode = gdb.query(queryHoofdNode, returns=Node)
             if hoofdnode:
-                return 'test'
+                print 'Skipped---'
             else:
+                newHoofdNodeLabel = gdb.labels.create(rawdata.subcategory)
                 newHoofdNode = gdb.nodes.create(naam=rawdata.subcategory)
-                label.add(newHoofdNode)
-            hoofdnode = gdb.query(queryHoofdNode, returns=Node)
-
-            rel = gdb.relationships.create(hoofdnode, re.sub("[^a-zA-Z0-9]", "", rawdata.subcategory), comp, since=12234123)
-
+                newHoofdNodeLabel.add(newHoofdNode)
+                hoofdnode = gdb.query(queryHoofdNode, returns=Node)
+            relQuery = 'MATCH (comp {url:"' + rawdata.linkurl + '"}) MATCH (hoofdnode {naam:"' + rawdata.subcategory + '"}) CREATE (comp)-[:'+re.sub("[^a-zA-Z0-9]", "",rawdata.subcategory)+']->(hoofdnode)'
+            relationship = gdb.query(relQuery)
     return 'Done'
+    
+def process_price_data():
+	for rawdata in Rawdata.select().where(Rawdata.provider == 'http://www.informatique.nl'):
+		alternateData = Rawdata.get(Rawdata.omschrijving.contains(rawdata.omschrijving))
+		if alternateData.linkurl:
+			relQuery = 'MATCH (infcomp {url:"' + rawdata.linkurl + '"}) MATCH (altcomp {url:"' + alternateData.linkurl + '"}) CREATE (infcomp)-[:PrijsVergelijk]->(altcomp)'
+			relationship = gdb.query(relQuery)
+	return 'Done'
